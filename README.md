@@ -102,7 +102,7 @@ At the beginning of times we have one addres (addr0) to act as main admin for th
 3. Deploy Libs : ArrayLib
 4. Deploy ANS
 
-### Add First ID : Alastria
+### Add First ID : Alastria
 1. new Account : AlastriaOwner (private key that owns the Proxy for Alastria ID)
 2. new Account : AlastriaKey (recovery Key to be stored in a USB as a backup)
 3. Using IdentityManager add a new ID for Alastria (AlastriaOwner & AlastriaKey). This will create a Proxy for the Alastria : AlastriaID.
