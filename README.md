@@ -1,5 +1,89 @@
 # Lyra : Definition of the ID for Alastria
 
+## Alastria ID
+
+Process to create a new ID : Only identified IDs can create a new IDs in Alastria now (That's a paradox, I know). First ID to be created is Alastria itself, this iD will be able to create new organitzations, and only these certified organizations will be able to create new identities.
+
+Alastria --> organizations[] --> users[]
+
+We will be using uPort Smart Contracts a s a basis for our Identity System. To start We will use two main components : IdentityRegister (uPortRegister) and IdentityManager.
+
+### Proxy contract
+The Proxy contract acts as a permanent identifier for a user. When interacting with other smart contracts on the blockchain the address of the proxy contract will be msg.sender for the user.
+
+### IdentityRegister
+Smart Contract to store attributes for a Proxy contract (Id).
+
+### IdentityManager
+IdentityManager is a controller contract for Proxy contracts that is shared between users. This minimizes gas costs compared to each user having to have their own separate controller for their proxy, while still allowing the user to have full control over their own proxy. The IdentityManager also gives the user the power to control the proxy from multiple devices.
+
+The IdentityManager should be able to perform the following actions:
+
+- Identity Creation
+  - Allow users to create a new proxy through the IdentityManager
+  - Allow users to transfer an old proxy to the IdentityManager
+- Use
+  - Relay a tx to proxy
+  - Adding of new owners
+  - Removal of owners
+  - Recovering from loss of all owner keys
+  - Changing recovery
+  - Transferring ownership of proxy away from IdentityManager
+
+The IdentityManager contract has any number of owners and one recovery key for each proxy. It also has rate limits for each caller on some of the functions. Proxies can be created, transfered to and from the IdentityManager. Owners can be added and removed, the recovery key can be changed.
+
+### Parameters
+
+- userTimeLock : Time before new owner can control proxy
+- adminTimeLock : Time before new owner can add/remove owners
+- adminRate : Time period used for rate limiting a given key for admin functionality
+
+List of owners for a proxy (timestamp):
+- mapping(address => mapping(address => uint)) owners;
+
+Recovery keys for a proxy:
+- mapping(address => address) recoveryKeys
+
+Rate limiters for a owner of a proxy (timestamp):
+- mapping(address => mapping(address => uint)) limiter;
+
+### Modifiers
+
+onlyOwner(address identity)
+- (owners[identity][msg.sender] > 0 && (owners[identity][msg.sender] + userTimeLock) <= now)
+
+onlyOlderOwner(address identity)
+- (owners[identity][msg.sender] > 0 && (owners[identity][msg.sender] + adminTimeLock) <= now)
+
+onlyRecovery(address identity)
+- (recoveryKeys[identity] == msg.sender)
+
+rateLimited(address identity)
+- (limiter[identity][msg.sender] < (now - adminRate))
+
+validAddress(address addr)
+- (addr != address(0))
+
+### Functions
+
+createIdentity: This is how we create a new ID. It Creates a new proxy contract for an owner and recovery
+- function createIdentity(address owner, address recoveryKey) validAddress(recoveryKey)
+
+forwardTo: Forward a call via the proxy.
+- function forwardTo(Proxy identity, address destination, uint value, bytes data) onlyOwner(identity)
+
+addOwner: Allows an olderOwner to add a new owner instantly
+- function addOwner(Proxy identity, address newOwner) onlyOlderOwner(identity) rateLimited(identity)
+
+addOwnerFromRecovery: Allows a recoveryKey to add a new owner with userTimeLock waiting time
+- function addOwnerFromRecovery(Proxy identity, address newOwner) onlyRecovery(identity) rateLimited(identity)
+
+removeOwner: Allows an owner to remove another owner instantly
+- function removeOwner(Proxy identity, address owner) onlyOlderOwner(identity) rateLimited(identity)
+
+changeRecovery: Allows an owner to change the recoveryKey instantly
+- function changeRecovery(Proxy identity, address recoveryKey) onlyOlderOwner(identity) rateLimited(identity) validAddress(recoveryKey)
+
 ## ANS - Alastria Name Service
 
 alastria.users.<alias> aka @<alias>
@@ -8,59 +92,42 @@ alastria.<brand>
 Each brand will need to deploy a Smart contract acting as a resolver for its own domain.
 Based on ENS but with a different way of giving names
 
-## Alastria ID
-
-Process to create a new ID : Only identified IDs can create a new IDs in Alastria now (That's a paradox, I know). First ID to be created is Alastria itself, this iD will be able to create new organitzations.
-
-We will be using uPOrt Smart Contracts a s a basis for our Identity System. We will use two main components : IdentityRegister (uPortRegister) and IdentityManager.
-
-Identity Register :
-
-
-IdentityManager
-
-
 ### Genesis
 
 At the beginning of times we have one addres (addr0) to act as main admin for the system. It's importnat to keep that address safe (of course). IN a later stage we will turn the contracts multiowner so we don't tdepend on this unqieu address.
 
-1. Deploy the uPort Like Contract for Alastria.
-2. Deploy the Generic register for attributes.
-3. Write a generic attribute for ALastria
-4. Deploy the Generic ANS for Alastria
-5. Deplot the Resolver for Alastria
+### Deploy Generic Smart Contracts
+1. Deploy IdentityManager
+2. Deploy IdentityRegister
+3. Deploy Libs : ArrayLib
+4. Deploy ANS
+
+### Add First ID : Alastria
+1. new Account : AlastriaOwner (private key that owns the Proxy for Alastria ID)
+2. new Account : AlastriaKey (recovery Key to be stored in a USB as a backup)
+3. Using IdentityManager add a new ID for Alastria (AlastriaOwner & AlastriaKey). This will create a Proxy for the Alastria : AlastriaID.
+4. Create a Json file with basic information about Alastria. Upload it to IPFS anf get its hash.
+5. Write to IdentityRegister the hash
+6. Deploy the Resolver for Alastria
+7. Write to ANS : AlsatriaID
 
 ### We need tools (nodejs/python) to :
-
 1. Deploy Smart Contracts easliy
-2. Deploy Ids
+2. Deploy new Ids
 3. Write entries in the Alastria NS
 4. Write entries to the Resolvers
 
 ### At this point we will have
-
 1. Address for ANS
 2. Address for Alastria main ID
-3. Address for teh Alastria Resolver
+3. Address for the Alastria Resolver
 4. We can resolve "alastria" to the Alastria main ID address
 
-### Add another ID (from the console)
-
-1. Deploy the uPort Like Contract for the new Organization (Org1)
-2. Cgange the owners of the Org1 ID
-3. Write a generic attribute for Org1 (name and adrress, signed by addr0)
-4. Write entries in the Alastria NS
-5. Deploy the Resolver for org1
-
-### At this point we will have
-
-1. Address for ANS and entries for Alastria and Org1
-2. Address for Alastria main ID and Org1
-3. Address for the Org1 Resolver
-4. We can resolve "alastria.org1" to the Org1 ID address
+### Considerations
+1. Only AlastriaID (through IdentityManager) can add new resolvers (organizations) to the ANS.
+2. Only certified organizations can add new IDs to IdentityManager.
 
 ### The API
-
 To make things easier for this organizations to add users in their zones we will create an API so they can (once authenticated) deploy easily new IDs.
 
 /login
