@@ -2,7 +2,7 @@
 
 ## Alastria ID
 
-Process to create a new ID : Only identified IDs can create a new IDs in Alastria now (That's a paradox, I know). First ID to be created is Alastria itself, this iD will be able to create new organitzations, and only these certified organizations will be able to create new identities.
+Process to create a new ID : Only identified IDs can create a new IDs in Alastria now (That's a paradox, I know). First ID to be created is Alastria itself, this iD will be able to create new organizations, and only these certified organizations will be able to create new identities.
 
 Alastria --> organizations[] --> users[]
 
@@ -30,7 +30,7 @@ The IdentityManager should be able to perform the following actions:
   - Changing recovery
   - Transferring ownership of proxy away from IdentityManager
 
-The IdentityManager contract has any number of owners and one recovery key for each proxy. It also has rate limits for each caller on some of the functions. Proxies can be created, transfered to and from the IdentityManager. Owners can be added and removed, the recovery key can be changed.
+The IdentityManager contract has any number of owners and one recovery key for each proxy. It also has rate limits for each caller on some of the functions. Proxies can be created, transferred to and from the IdentityManager. Owners can be added and removed, the recovery key can be changed.
 
 ### Parameters
 
@@ -94,7 +94,7 @@ Based on ENS but with a different way of giving names
 
 ### Genesis
 
-At the beginning of times we have one addres (addr0) to act as main admin for the system. It's importnat to keep that address safe (of course). IN a later stage we will turn the contracts multiowner so we don't tdepend on this unqieu address.
+At the beginning of times we have one address (addr0) to act as main admin for the system. It's important to keep that address safe (of course). IN a later stage we will turn the contracts multi-owner so we don't depend on this unique address.
 
 ### Deploy Generic Smart Contracts
 1. Deploy IdentityManager
@@ -112,7 +112,7 @@ At the beginning of times we have one addres (addr0) to act as main admin for th
 7. Write to ANS : AlsatriaID
 
 ### We need tools (nodejs/python) to :
-1. Deploy Smart Contracts easliy
+1. Deploy Smart Contracts easily
 2. Deploy new Ids
 3. Write entries in the Alastria NS
 4. Write entries to the Resolvers
@@ -131,7 +131,7 @@ At the beginning of times we have one addres (addr0) to act as main admin for th
 To make things easier for this organizations to add users in their zones we will create an API so they can (once authenticated) deploy easily new IDs.
 
 /login
-We will use webtokens (jwt).
+We will use web tokens (jwt).
 
 .... define process... Need to talk to you guys on slack
 
@@ -139,7 +139,7 @@ We will use webtokens (jwt).
 Deploys a new ID and sets the owner to <addr_owner>. Adds a new entry to the resolver with the name. Returns the new <addr> for the ID.
 
 /registerAttribute/<addr>/<attribute>
-Adds an atribute to the <addr>
+Adds an attribute to the <addr>
 
 ## Alastria ID App : On the phone!
 Double verification : email + SMS (phone)
@@ -149,5 +149,7 @@ Once the App is verified we can save basic information about the user : First Na
 
 1. Create a Smart contract representing your ID
 2. Create a file (JSON) with all your data following the standar Persona. We create a merkle tree of all the information. This way we can share anly the information we want to share and the hashes for other information. A nonce will be added whenever needed (DNI) for security reasons.
-3. Write in the registry the top of the merkle tree. AT this point thins information is not certified by anyone (not trutsable)
+3. Write in the registry the top of the merkle tree. AT this point thins information is not certified by anyone (not trustable)
 4. Ask for an alias and create the alias in the ANS.
+
+
